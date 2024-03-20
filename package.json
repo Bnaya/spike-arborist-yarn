@@ -1,0 +1,23 @@
+{
+  "name": "spike-arborist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@npmcli/arborist": "^7.4.0",
+    "@types/node": "^20.11.30",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "@yarnpkg/core": "^4.0.3",
+    "@yarnpkg/fslib": "^3.0.2",
+    "@yarnpkg/plugin-npm": "^3.0.1"
+  },
+  "packageManager": "npm@10.5.0"
+}
