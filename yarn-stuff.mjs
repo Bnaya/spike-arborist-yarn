@@ -39,13 +39,14 @@ const configuration = await Configuration.find(
   { strict: false }
 );
 
-// configuration.get('nodeLinker')
-// configuration.settings.set('nodeLinker', 'node-modules')
+// const nodeLinker = configuration.get('nodeLinker');
+// console.info({ nodeLinker })
+
 
 if (!configuration.projectCwd) throw new Error();
 
-const resolver = configuration.makeResolver();
-const fetcher = configuration.makeFetcher();
+// const resolver = configuration.makeResolver();
+// const fetcher = configuration.makeFetcher();
 
 const reporter = new LightReport({ configuration, stdout: process.stdout });
 
@@ -55,14 +56,19 @@ const { project: projectWithoutDevDeps, workspace } = await Project.find(
   configuration,
   configuration.projectCwd
 );
-if (!workspace) throw new Error();
 
-workspace.manifest.devDependencies.clear();
+const projectWithAllDeps = await Project.find(
+  configuration,
+  configuration.projectCwd
+);
+
+
+if (!workspace) throw new Error();
+if (!projectWithAllDeps.workspace) throw new Error();
 
 for (const workspace of projectWithoutDevDeps.workspaces) {
   workspace.manifest.devDependencies.clear();
 }
-
 
 await projectWithoutDevDeps.resolveEverything({
   lockfileOnly: false,
@@ -70,25 +76,15 @@ await projectWithoutDevDeps.resolveEverything({
   cache
 });
 
-workspace.manifest.devDependencies.clear();
-
-for (const workspace of projectWithoutDevDeps.workspaces) {
-  workspace.manifest.devDependencies.clear();
-}
-
-// webpack and it's deps will still be here
-projectWithoutDevDeps.originalPackages
-
-// this will fetch also webpack :( if you debug it you will see
-await projectWithoutDevDeps.fetchEverything({
-  cache,
+await projectWithAllDeps.project.resolveEverything({
+  lockfileOnly: true,
   report: reporter,
-  persistProject: false,
-  mode: InstallMode.SkipBuild,
 });
 
-projectWithoutDevDeps.toString();
-projectWithoutDevDeps.originalPackages;
-
-// Webpack will still be here
+projectWithoutDevDeps.originalPackages
 projectWithoutDevDeps.storedPackages;
+
+projectWithAllDeps.project.originalPackages
+projectWithAllDeps.project.storedPackages;
+
+console.info('Done');
