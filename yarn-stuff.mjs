@@ -7,8 +7,12 @@ import {
   LightReport,
   Cache,
   InstallMode,
+  WorkspaceResolver,
+  LockfileResolver,
 } from "@yarnpkg/core";
 import * as pluginNpm from "@yarnpkg/plugin-npm";
+import * as nodeModules from "@yarnpkg/plugin-nm";
+
 import { npath } from "@yarnpkg/fslib";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,11 +28,19 @@ const cwd = npath.toPortablePath(yarn4ProjectRoot);
 const configuration = await Configuration.find(
   cwd,
   {
-    modules: new Map([["@yarnpkg/plugin-npm", pluginNpm.default]]),
-    plugins: new Set(["@yarnpkg/plugin-npm"]),
+    modules: new Map(
+        [
+            ["@yarnpkg/plugin-npm", pluginNpm.default],
+            ["@yarnpkg/plugin-nm", nodeModules.default],
+        ]
+        ),
+    plugins: new Set(["@yarnpkg/plugin-npm", "@yarnpkg/plugin-nm"]),
   },
   { strict: false }
 );
+
+// configuration.get('nodeLinker')
+// configuration.settings.set('nodeLinker', 'node-modules')
 
 if (!configuration.projectCwd) throw new Error();
 
@@ -51,9 +63,11 @@ for (const workspace of projectWithoutDevDeps.workspaces) {
   workspace.manifest.devDependencies.clear();
 }
 
+
 await projectWithoutDevDeps.resolveEverything({
-  lockfileOnly: true,
+  lockfileOnly: false,
   report: reporter,
+  cache
 });
 
 workspace.manifest.devDependencies.clear();
